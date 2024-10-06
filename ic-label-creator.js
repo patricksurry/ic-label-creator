@@ -40,30 +40,43 @@ function drawChip(chipName, series, type) {
   // jQuery won't render svg elements without namespace url
   var svgChip = $(document.createElementNS("http://www.w3.org/2000/svg", 'svg')).attr({
     width: chipWidth + 'mm',
-    height: chipHeight + 'mm',
+    height: (chipHeight+2) + 'mm',
     x: globals.chipPositionX + 'mm',
     y: globals.chipPositionY + 'mm',
+    viewBox: '0 -1 ' + chipWidth + ' ' + (chipHeight+2),
   });
 
+  // DRAW PIN ticks
+  for (i=0; i<numPins/2; i++) {
+    svgChip.append($(document.createElementNS("http://www.w3.org/2000/svg", 'line')).attr({
+      x1: (i+0.75)*globals.pinDistance,
+      x2: (i+0.75)*globals.pinDistance,
+      y1: -1,
+      y2: (chipHeight+1),
+      stroke: 'black',
+      'stroke-width': globals.svgStrokeWidth,
+    }));
+  }
   // DRAW CHIP OUTLINE
   svgChip.append($(document.createElementNS("http://www.w3.org/2000/svg", 'rect')).attr({
-    x : globals.svgStrokeOffset + 'mm',
-    y : globals.svgStrokeOffset + 'mm',
-    width: chipWidth - globals.svgStrokeOffset + 'mm',
-    height: chipHeight - globals.svgStrokeOffset + 'mm',
-    stroke: 'silver',
-    'stroke-width': globals.svgStrokeWidth + 'mm',
+    x : globals.svgStrokeOffset,
+    y : globals.svgStrokeOffset,
+    width: chipWidth - globals.svgStrokeOffset,
+    height: chipHeight - globals.svgStrokeOffset,
+    stroke: '#999',
+    'stroke-width': globals.svgStrokeWidth,
     fill: 'white'
   }));
 
-  // DRAW HALFCIRCLE MARKER
-  svgChip.append($(document.createElementNS("http://www.w3.org/2000/svg", 'circle')).attr({
-    cx : 0,
-    cy : '50%',
-    r  : '1.2mm',
-    fill: 'grey'
-  }));
-
+  if (!['connector', 'bus'].includes(chip.type)) {
+    // DRAW HALFCIRCLE MARKER
+    svgChip.append($(document.createElementNS("http://www.w3.org/2000/svg", 'circle')).attr({
+      cx : 0,
+      cy : chipHeight/2,
+      r  : 1.2,
+      fill: 'grey'
+    }));
+  }
   // DRAW CHIP MODEL + DESCRIPTION
 
   tweakedChipName = tweakChipName(chipName, series, type);
@@ -72,11 +85,11 @@ function drawChip(chipName, series, type) {
     .html('&nbsp;&nbsp;' + tweakedChipName + ' ' + chip.description)
     .attr({
       x : '50%',
-      y : chipHeight / 2 + .2  + 'mm',
+      y : chipHeight / 2 + .2,
       'dominant-baseline': 'middle',
       'text-anchor': 'middle',
       'font-family' : 'sans-serif',
-      'font-size' : '1.6mm',
+      'font-size' : '1.6',
       'font-weight' : 'bold',
       fill: chipColor(chip.type),
     })
@@ -176,28 +189,28 @@ function drawPin(pinData) {
     pinData.svgChip.append($(document.createElementNS("http://www.w3.org/2000/svg", 'text'))
       .html(pinData.pinName)
       .attr({
-        x: 0,
-        y: 0,
+        y: pinData.x + .6,
+        x: -(pinData.chipHeight - .2),
+        transform: 'rotate(270)',
         'text-decoration': pinData.activeLow ? 'overline' : '',
         'dominant-baseline': 'baseline',
         'text-anchor': 'start',
         'font-family': 'sans-serif',
         'font-size': fontSize(pinData.pinName, pinData.chipHeightPins),
-        style: 'transform: rotate(270deg) translate(-' + (pinData.chipHeight - .2) + 'mm, ' + (pinData.x + .6) + 'mm);',
       })
     );
   } else {
     pinData.svgChip.append($(document.createElementNS("http://www.w3.org/2000/svg", 'text'))
       .html(pinData.pinName)
       .attr({
-        x: 0,
-        y: 0,
+        x: -.3,
+        y: (pinData.x + .7),
+        transform: 'rotate(270)',
         'text-decoration': pinData.activeLow ? 'overline' : '',
         'dominant-baseline': 'baseline',
         'text-anchor': 'end',
         'font-family': 'sans-serif',
         'font-size': fontSize(pinData.pinName, pinData.chipHeightPins),
-        style: 'transform: rotate(270deg) translate(-.3mm, ' + (pinData.x + .7) + 'mm);',
       })
     );
   }
@@ -211,21 +224,21 @@ function fontSize(pinName, chipHeightPins) {
 
   // We don't need font scaling for larger chips
   if (chipHeightPins > 3) {
-    return '1.6mm';
+    return 1.6;
   }
 
   // Do some handstands for multibyte chars
   var length = countPinNameChars(pinName);
 
   if (length <=2) {
-    return '1.6mm';
+    return 1.6;
   }
 
   if (length <=3) {
-    return '1.4mm';
+    return 1.4;
   }
 
-  return '1.1mm';
+  return 1.1;
 }
 
 
